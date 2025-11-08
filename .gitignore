@@ -1,1 +1,7 @@
+# Project
+dist
+node_modules
+
+# System
 .DS_Store
+Thumbs.db

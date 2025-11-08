@@ -10,6 +10,7 @@ declare global {
 
 		copy(): T[]
 
+		clear(): void
 		merge(otherArray: T[]): T[]
 
 		remove(predicate: (element: T, index: number, array: T[]) => boolean | undefined): T[]
@@ -139,6 +140,12 @@ Object.defineProperty(Array.prototype, "mapFirst", {
 Object.defineProperty(Array.prototype, "copy", {
 	value: function <T>(this: T[]): T[] {
 		return this.slice()
+	}
+})
+
+Object.defineProperty(Array.prototype, "clear", {
+	value: function <T>(this: T[]): void {
+		this.length = 0
 	}
 })
 
