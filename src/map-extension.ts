@@ -3,6 +3,7 @@ export {}
 type KeyValueTuple<K, V> = [key: K, value: V]
 type VoidTuple = [undefined, undefined]
 type PredicateBlock<K, V> = (value: V, key: K, map: Map<K, V>) => boolean
+type EvaluationBlock<K, V> = (map: Map<K, V>) => V
 
 declare global {
 	interface Map<K, V> {
@@ -18,6 +19,10 @@ declare global {
 		findKey: (predicate: PredicateBlock<K, V>) => K | undefined
 		filter: (predicate: PredicateBlock<K, V>) => Map<K, V>
 		remove: (predicate: PredicateBlock<K, V>) => Map<K, V>
+
+		setIfUndefined: (key: K, block: EvaluationBlock<K, V>) => V
+		setIfDefined: (key: K, block: EvaluationBlock<K, V>) => V|undefined
+
 		copy: (block?: (map: Map<K, V>) => void) => Map<K, V>
 	}
 
@@ -126,6 +131,34 @@ Object.defineProperty(Map.prototype, "remove", {
 		}
 
 		return this
+	}
+})
+
+Object.defineProperty(Map.prototype, "setIfUndefined", {
+	value: function <K, V>(this: Map<K, V>, key: K, block: EvaluationBlock<K, V>): V {
+		const existingValue = this.get(key)
+		if (existingValue !== undefined) {
+			return existingValue
+		}
+
+		const newValue = block(this)
+		this.set(key, newValue)
+		
+		return newValue
+	}
+})
+
+Object.defineProperty(Map.prototype, "setIfDefined", {
+	value: function <K, V>(this: Map<K, V>, key: K, block: EvaluationBlock<K, V>): V|undefined {
+		const existingValue = this.get(key)
+		if (existingValue === undefined) {
+			return undefined
+		}
+
+		const newValue = block(this)
+		this.set(key, newValue)
+		
+		return newValue
 	}
 })
 
