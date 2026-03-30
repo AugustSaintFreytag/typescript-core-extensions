@@ -7,6 +7,7 @@ declare global {
 		flatMap<U>(block: (element: T, index: number, array: T[]) => U[] | undefined): U[]
 		setMap<U>(block: (element: T, index: number, array: T[]) => U | undefined): Set<U>
 		mapFirst<U>(block: (element: T, index: number, array: T[]) => U | undefined): U | undefined
+		stride(stride: number, maxStrides?: number): T[][]
 
 		copy(): T[]
 
@@ -134,6 +135,28 @@ Object.defineProperty(Array.prototype, "mapFirst", {
 		}
 
 		return undefined
+	}
+})
+
+Object.defineProperty(Array.prototype, "stride", {
+	value: function <T>(this: T[], stride: number, maxStrides?: number): T[][] {
+		const result: T[][] = []
+		const limit = maxStrides ?? 0
+
+		let numberOfElements = 0
+		
+		for (let i = 0; i < this.length; i += stride) {
+			if (numberOfElements >= limit) {
+				break
+			}
+			
+			const slice = this.slice(i, i + stride)
+			result.push(slice)
+
+			numberOfElements++
+		}
+
+		return result
 	}
 })
 
