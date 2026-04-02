@@ -11,6 +11,8 @@ declare global {
 		unshift(substring: string): string
 		push(substring: string): string
 
+		stride(stride: number, maxStrides?: number): string[]
+
 		toCapitalized(): string
 		toTruncated(maxLength: number): string
 	}
@@ -49,6 +51,26 @@ Object.defineProperty(String.prototype, "unshift", {
 Object.defineProperty(String.prototype, "push", {
 	value: function (this: string, substring: string) {
 		return this + substring
+	}
+})
+
+Object.defineProperty(String.prototype, "stride", {
+	value: function (this: string, stride: number, maxStrides?: number): string[] {
+		const result: string[] = []
+		const limit = maxStrides ?? 0
+
+		let numberOfElements = 0
+		
+		for (let i = 0; i < this.length; i += stride) {
+			if (numberOfElements >= limit) {
+				break
+			}
+			
+			result.push(this.substring(i, i + stride))
+			numberOfElements++
+		}
+		
+		return result
 	}
 })
 
