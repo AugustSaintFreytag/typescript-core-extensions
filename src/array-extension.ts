@@ -30,8 +30,6 @@ declare global {
 		get last(): T | undefined
 
 		toSet(): Set<T>
-
-		toChunked(chunkSize: number): T[][]
 	}
 
 	interface ReadonlyArray<T> {
@@ -56,8 +54,6 @@ declare global {
         get last(): T | undefined
 
         toSet(): Set<T>
-
-        toChunked(chunkSize: number): T[][]
     }
 }
 
@@ -280,21 +276,5 @@ Object.defineProperty(Array.prototype, "last", {
 Object.defineProperty(Array.prototype, "toSet", {
 	value: function <T>(this: T[]): Set<T> {
 		return new Set(this)
-	}
-})
-
-Object.defineProperty(Array.prototype, "toChunked", {
-	value: function <T>(this: T[], chunkSize: number): T[][] {
-		const chunks: T[][] = []
-
-		for (const index of this.indices()) {
-			if (index % chunkSize === 0) {
-				chunks.push([])
-			}
-
-			chunks.last!.push(this[index])
-		}
-
-		return chunks
 	}
 })
