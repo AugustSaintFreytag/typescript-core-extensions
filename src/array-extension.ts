@@ -6,6 +6,7 @@ declare global {
 		compactMap<U>(block: (element: T, index: number, array: T[]) => U | undefined): U[]
 		flatMap<U>(block: (element: T, index: number, array: T[]) => U[] | undefined): U[]
 		setMap<U>(block: (element: T, index: number, array: T[]) => U | undefined): Set<U>
+		keyMap<U>(block: (element: T, index: number, array: T[]) => U | undefined): Map<U, T>
 		mapFirst<U>(block: (element: T, index: number, array: T[]) => U | undefined): U | undefined
 
 		reversed(): T[]
@@ -37,6 +38,7 @@ declare global {
 		compactMap<U>(block: (element: T, index: number, array: readonly T[]) => U | undefined): U[]
 		flatMap<U>(block: (element: T, index: number, array: readonly T[]) => U[] | undefined): U[]
 		setMap<U>(block: (element: T, index: number, array: readonly T[]) => U | undefined): Set<U>
+		keyMap<U>(block: (element: T, index: number, array: readonly T[]) => U | undefined): Map<U, T>
 		mapFirst<U>(block: (element: T, index: number, array: readonly T[]) => U | undefined): U | undefined
 
 		copy(): T[]
@@ -118,6 +120,22 @@ Object.defineProperty(Array.prototype, "setMap", {
 		}
 
 		return set
+	}
+})
+
+Object.defineProperty(Array.prototype, "keyMap", {
+	value: function <T, U>(this: T[], block: (element: T, index: number, array: T[]) => U): Map<U, T> {
+		const map = new Map<U, T>()
+
+		for (const [index, value] of this.entries()) {
+			const mappedKey = block(value, index, this)
+
+			if (mappedKey !== undefined) {
+				map.set(mappedKey, value)
+			}
+		}
+
+		return map
 	}
 })
 
