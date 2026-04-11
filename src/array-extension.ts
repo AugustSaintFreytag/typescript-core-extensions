@@ -7,9 +7,14 @@ declare global {
 		flatMap<U>(block: (element: T, index: number, array: T[]) => U[] | undefined): U[]
 		setMap<U>(block: (element: T, index: number, array: T[]) => U | undefined): Set<U>
 		mapFirst<U>(block: (element: T, index: number, array: T[]) => U | undefined): U | undefined
-		stride(stride: number, maxStrides?: number): T[][]
+
+		reversed(): T[]
+		sorted(block?: (lhs: T, rhs: T) => number): T[]
+		sortedByProperty(block: (value: T) => string | undefined): T[]
+		sortedNumerically(): number[]
 
 		copy(): T[]
+		stride(stride: number, maxStrides?: number): T[][]
 
 		clear(): void
 		merge(otherArray: T[]): T[]
@@ -17,6 +22,25 @@ declare global {
 		remove(predicate: (element: T, index: number, array: T[]) => boolean | undefined): T[]
 		removeElement(element: T): T | undefined
 		removeAt(index: number): T | undefined
+
+		indices(): number[]
+
+		get isEmpty(): boolean
+		get first(): T | undefined
+		get last(): T | undefined
+
+		toSet(): Set<T>
+	}
+
+	interface ReadonlyArray<T> {
+		compact(): NonNullable<T>[]
+		compactMap<U>(block: (element: T, index: number, array: readonly T[]) => U | undefined): U[]
+		flatMap<U>(block: (element: T, index: number, array: readonly T[]) => U[] | undefined): U[]
+		setMap<U>(block: (element: T, index: number, array: readonly T[]) => U | undefined): Set<U>
+		mapFirst<U>(block: (element: T, index: number, array: readonly T[]) => U | undefined): U | undefined
+
+		copy(): T[]
+		stride(stride: number, maxStrides?: number): T[][]
 
 		reversed(): T[]
 		sorted(block?: (lhs: T, rhs: T) => number): T[]
@@ -31,30 +55,6 @@ declare global {
 
 		toSet(): Set<T>
 	}
-
-	interface ReadonlyArray<T> {
-        compact(): NonNullable<T>[]
-        compactMap<U>(block: (element: T, index: number, array: readonly T[]) => U | undefined): U[]
-        flatMap<U>(block: (element: T, index: number, array: readonly T[]) => U[] | undefined): U[]
-        setMap<U>(block: (element: T, index: number, array: readonly T[]) => U | undefined): Set<U>
-        mapFirst<U>(block: (element: T, index: number, array: readonly T[]) => U | undefined): U | undefined
-		stride(stride: number, maxStrides?: number): T[][]
-
-        copy(): T[]
-
-        reversed(): T[]
-        sorted(block?: (lhs: T, rhs: T) => number): T[]
-        sortedByProperty(block: (value: T) => string | undefined): T[]
-        sortedNumerically(): number[]
-
-        indices(): number[]
-
-        get isEmpty(): boolean
-        get first(): T | undefined
-        get last(): T | undefined
-
-        toSet(): Set<T>
-    }
 }
 
 Object.defineProperty(Array.prototype, "isEmpty", {
@@ -141,12 +141,12 @@ Object.defineProperty(Array.prototype, "stride", {
 		const limit = maxStrides ?? 0
 
 		let numberOfElements = 0
-		
+
 		for (let i = 0; i < this.length; i += stride) {
 			if (numberOfElements >= limit) {
 				break
 			}
-			
+
 			const slice = this.slice(i, i + stride)
 			result.push(slice)
 
