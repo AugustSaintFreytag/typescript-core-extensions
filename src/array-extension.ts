@@ -40,6 +40,7 @@ declare global {
         flatMap<U>(block: (element: T, index: number, array: readonly T[]) => U[] | undefined): U[]
         setMap<U>(block: (element: T, index: number, array: readonly T[]) => U | undefined): Set<U>
         mapFirst<U>(block: (element: T, index: number, array: readonly T[]) => U | undefined): U | undefined
+		stride(stride: number, maxStrides?: number): T[][]
 
         copy(): T[]
 
