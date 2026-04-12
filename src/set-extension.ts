@@ -14,8 +14,10 @@ declare global {
 		isStrictSuperset<T>(otherSet: Set<T>): boolean
 
 		map<U>(block: (element: T, set: Set<T>) => U): U[]
-		flatMap<U>(block: (element: T, set: Set<T>) => U[]): U[]
 		compactMap<U>(block: (element: T, set: Set<T>) => U | undefined): NonNullable<U>[]
+		flatMap<U>(block: (element: T, set: Set<T>) => U[]): U[]
+		setMap<U>(block: (element: T, set: Set<T>) => U | undefined): Set<U>
+		keyMap<U>(block: (element: T, set: Set<T>) => U | undefined): Map<U, T>
 		filter(block: (element: T, set: Set<T>) => boolean): Set<T>
 		reduce<U>(block: (reducedValue: U, element: T, set: Set<T>) => U, initialValue: U): U
 
@@ -23,7 +25,6 @@ declare global {
 		union<T>(otherSet: Set<T>): Set<T>
 		intersect<T>(otherSet: Set<T>): Set<T>
 		symmetricDifference<T>(otherSet: Set<T>): Set<T>
-		truncate<T>(): Set<T>
 
 		formSubtraction<T>(otherSet: Set<T>): Set<T>
 		formUnion<T>(otherSet: Set<T>): Set<T>
@@ -33,6 +34,7 @@ declare global {
 		sorted(): T[]
 		sorted(block: (lhs: T, rhs: T) => number): T[]
 
+		truncate<T>(): Set<T>
 		copy(): Set<T>
 
 		toArray(): T[]
@@ -52,8 +54,10 @@ declare global {
 		isStrictSuperset<T>(otherSet: Set<T>): boolean
 
 		map<U>(block: (element: T, set: Set<T>) => U): U[]
-		flatMap<U>(block: (element: T, set: Set<T>) => U[]): U[]
 		compactMap<U>(block: (element: T, set: Set<T>) => U | undefined): NonNullable<U>[]
+		flatMap<U>(block: (element: T, set: Set<T>) => U[]): U[]
+		setMap<U>(block: (element: T, set: Set<T>) => U | undefined): Set<U>
+		keyMap<U>(block: (element: T, set: Set<T>) => U | undefined): Map<U, T>
 		filter(block: (element: T, set: Set<T>) => boolean): Set<T>
 		reduce<U>(block: (reducedValue: U, element: T, set: Set<T>) => U, initialValue: U): U
 
@@ -69,7 +73,7 @@ declare global {
 
 		toArray(): T[]
 		toString(): string
-    }
+	}
 }
 
 Object.defineProperty(Set.prototype, "isEmpty", {
@@ -163,15 +167,6 @@ Object.defineProperty(Set.prototype, "map", {
 	}
 })
 
-Object.defineProperty(Set.prototype, "flatMap", {
-	value: function <T, U>(this: Set<T>, block: (element: T, set: Set<T>) => U[]): U[] {
-		return this.reduce<U[]>((mappedValues, element) => {
-			mappedValues.push(...block(element, this))
-			return mappedValues
-		}, [])
-	}
-})
-
 Object.defineProperty(Set.prototype, "compactMap", {
 	value: function <T, U>(this: Set<T>, block: (element: T, set: Set<T>) => U): NonNullable<U>[] {
 		const mappedValues: NonNullable<U>[] = []
@@ -187,6 +182,47 @@ Object.defineProperty(Set.prototype, "compactMap", {
 		})
 
 		return mappedValues
+	}
+})
+
+Object.defineProperty(Set.prototype, "flatMap", {
+	value: function <T, U>(this: Set<T>, block: (element: T, set: Set<T>) => U[]): U[] {
+		return this.reduce<U[]>((mappedValues, element) => {
+			mappedValues.push(...block(element, this))
+			return mappedValues
+		}, [])
+	}
+})
+
+Object.defineProperty(Set.prototype, "setMap", {
+	value: function <T, U>(this: Set<T>, block: (element: T, set: Set<T>) => U | undefined): Set<U> {
+		const set = new Set<U>()
+
+		for (const value of this) {
+			const mappedValue = block(value, this)
+
+			if (mappedValue !== undefined) {
+				set.add(mappedValue)
+			}
+		}
+
+		return set
+	}
+})
+
+Object.defineProperty(Set.prototype, "keyMap", {
+	value: function <T, U>(this: Set<T>, block: (element: T, set: Set<T>) => U): Map<U, T> {
+		const map = new Map<U, T>()
+
+		for (const value of this) {
+			const mappedKey = block(value, this)
+
+			if (mappedKey !== undefined) {
+				map.set(mappedKey, value)
+			}
+		}
+
+		return map
 	}
 })
 
@@ -284,6 +320,16 @@ Object.defineProperty(Set.prototype, "formSymmetricDifference", {
 Object.defineProperty(Set.prototype, "sorted", {
 	value: function <T>(this: Set<T>, block?: (lhs: T, rhs: T) => number): T[] {
 		return [...this.values()].sort(block)
+	}
+})
+
+Object.defineProperty(Set.prototype, "truncate", {
+	value: function <T>(this: Set<T>): Set<T> {
+		for (const value of this) {
+			this.delete(value)
+		}
+
+		return this
 	}
 })
 

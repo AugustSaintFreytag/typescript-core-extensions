@@ -6,10 +6,16 @@ declare global {
 		compactMap<U>(block: (element: T, index: number, array: T[]) => U | undefined): U[]
 		flatMap<U>(block: (element: T, index: number, array: T[]) => U[] | undefined): U[]
 		setMap<U>(block: (element: T, index: number, array: T[]) => U | undefined): Set<U>
+		keyMap<U>(block: (element: T, index: number, array: T[]) => U | undefined): Map<U, T>
 		mapFirst<U>(block: (element: T, index: number, array: T[]) => U | undefined): U | undefined
-		stride(stride: number, maxStrides?: number): T[][]
+
+		reversed(): T[]
+		sorted(block?: (lhs: T, rhs: T) => number): T[]
+		sortedByProperty(block: (value: T) => string | undefined): T[]
+		sortedNumerically(): number[]
 
 		copy(): T[]
+		stride(stride: number, maxStrides?: number): T[][]
 
 		clear(): void
 		merge(otherArray: T[]): T[]
@@ -17,6 +23,26 @@ declare global {
 		remove(predicate: (element: T, index: number, array: T[]) => boolean | undefined): T[]
 		removeElement(element: T): T | undefined
 		removeAt(index: number): T | undefined
+
+		indices(): number[]
+
+		get isEmpty(): boolean
+		get first(): T | undefined
+		get last(): T | undefined
+
+		toSet(): Set<T>
+	}
+
+	interface ReadonlyArray<T> {
+		compact(): NonNullable<T>[]
+		compactMap<U>(block: (element: T, index: number, array: readonly T[]) => U | undefined): U[]
+		flatMap<U>(block: (element: T, index: number, array: readonly T[]) => U[] | undefined): U[]
+		setMap<U>(block: (element: T, index: number, array: readonly T[]) => U | undefined): Set<U>
+		keyMap<U>(block: (element: T, index: number, array: readonly T[]) => U | undefined): Map<U, T>
+		mapFirst<U>(block: (element: T, index: number, array: readonly T[]) => U | undefined): U | undefined
+
+		copy(): T[]
+		stride(stride: number, maxStrides?: number): T[][]
 
 		reversed(): T[]
 		sorted(block?: (lhs: T, rhs: T) => number): T[]
@@ -30,35 +56,7 @@ declare global {
 		get last(): T | undefined
 
 		toSet(): Set<T>
-
-		toChunked(chunkSize: number): T[][]
 	}
-
-	interface ReadonlyArray<T> {
-        compact(): NonNullable<T>[]
-        compactMap<U>(block: (element: T, index: number, array: readonly T[]) => U | undefined): U[]
-        flatMap<U>(block: (element: T, index: number, array: readonly T[]) => U[] | undefined): U[]
-        setMap<U>(block: (element: T, index: number, array: readonly T[]) => U | undefined): Set<U>
-        mapFirst<U>(block: (element: T, index: number, array: readonly T[]) => U | undefined): U | undefined
-		stride(stride: number, maxStrides?: number): T[][]
-
-        copy(): T[]
-
-        reversed(): T[]
-        sorted(block?: (lhs: T, rhs: T) => number): T[]
-        sortedByProperty(block: (value: T) => string | undefined): T[]
-        sortedNumerically(): number[]
-
-        indices(): number[]
-
-        get isEmpty(): boolean
-        get first(): T | undefined
-        get last(): T | undefined
-
-        toSet(): Set<T>
-
-        toChunked(chunkSize: number): T[][]
-    }
 }
 
 Object.defineProperty(Array.prototype, "isEmpty", {
@@ -125,6 +123,22 @@ Object.defineProperty(Array.prototype, "setMap", {
 	}
 })
 
+Object.defineProperty(Array.prototype, "keyMap", {
+	value: function <T, U>(this: T[], block: (element: T, index: number, array: T[]) => U): Map<U, T> {
+		const map = new Map<U, T>()
+
+		for (const [index, value] of this.entries()) {
+			const mappedKey = block(value, index, this)
+
+			if (mappedKey !== undefined) {
+				map.set(mappedKey, value)
+			}
+		}
+
+		return map
+	}
+})
+
 Object.defineProperty(Array.prototype, "mapFirst", {
 	value: function <T, U>(this: T[], block: (element: T, index: number, array: T[]) => U | undefined): U | undefined {
 		for (const [index, value] of this.entries()) {
@@ -145,12 +159,12 @@ Object.defineProperty(Array.prototype, "stride", {
 		const limit = maxStrides ?? 0
 
 		let numberOfElements = 0
-		
+
 		for (let i = 0; i < this.length; i += stride) {
 			if (numberOfElements >= limit) {
 				break
 			}
-			
+
 			const slice = this.slice(i, i + stride)
 			result.push(slice)
 
@@ -280,21 +294,5 @@ Object.defineProperty(Array.prototype, "last", {
 Object.defineProperty(Array.prototype, "toSet", {
 	value: function <T>(this: T[]): Set<T> {
 		return new Set(this)
-	}
-})
-
-Object.defineProperty(Array.prototype, "toChunked", {
-	value: function <T>(this: T[], chunkSize: number): T[][] {
-		const chunks: T[][] = []
-
-		for (const index of this.indices()) {
-			if (index % chunkSize === 0) {
-				chunks.push([])
-			}
-
-			chunks.last!.push(this[index])
-		}
-
-		return chunks
 	}
 })
