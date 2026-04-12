@@ -25,7 +25,6 @@ declare global {
 		union<T>(otherSet: Set<T>): Set<T>
 		intersect<T>(otherSet: Set<T>): Set<T>
 		symmetricDifference<T>(otherSet: Set<T>): Set<T>
-		truncate<T>(): Set<T>
 
 		formSubtraction<T>(otherSet: Set<T>): Set<T>
 		formUnion<T>(otherSet: Set<T>): Set<T>
@@ -35,6 +34,7 @@ declare global {
 		sorted(): T[]
 		sorted(block: (lhs: T, rhs: T) => number): T[]
 
+		truncate<T>(): Set<T>
 		copy(): Set<T>
 
 		toArray(): T[]
@@ -320,6 +320,16 @@ Object.defineProperty(Set.prototype, "formSymmetricDifference", {
 Object.defineProperty(Set.prototype, "sorted", {
 	value: function <T>(this: Set<T>, block?: (lhs: T, rhs: T) => number): T[] {
 		return [...this.values()].sort(block)
+	}
+})
+
+Object.defineProperty(Set.prototype, "truncate", {
+	value: function <T>(this: Set<T>): Set<T> {
+		for (const value of this) {
+			this.delete(value)
+		}
+
+		return this
 	}
 })
 
